@@ -371,8 +371,8 @@ public class StreamSessionService
         }
         else
         {
-            var syncedAnchor2 = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
-            var (index, offset) = ScheduleCalculator.CurrentProgram(programs, startUtc, syncedAnchor2);
+            var syncedAnchor = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+            var (index, offset) = ScheduleCalculator.CurrentProgram(programs, startUtc, syncedAnchor);
             schedule = new LoopStreamSchedule(programs, index, offset, startUtc, follower);
             planIndex = index;
         }
@@ -636,8 +636,8 @@ public class StreamSessionService
                 // the exact play order while turning the seek into an index hop inside the first file. The list
                 // is rewritten every (re)start because the rotation point is the current schedule position.
                 // The concat demuxer reads "file '<path>'" lines; single quotes in a path escape as '\''.
-                var syncedAnchor3 = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
-                var (airing, airingOffset) = ScheduleCalculator.CurrentProgram(programs, target, syncedAnchor3);
+                var syncedAnchor = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+                var (airing, airingOffset) = ScheduleCalculator.CurrentProgram(programs, target, syncedAnchor);
 
                 // The item airing now may be missing (deleted or on unmounted storage): start at the next one that
                 // exists instead, and leave missing items out of the list (the concat demuxer cannot open one, and
