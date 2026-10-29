@@ -137,4 +137,72 @@ public static class ScheduleCalculator
 
         return schedule;
     }
+
+    /// <summary>
+    /// Projects the schedule with sync-boundary padding: items that end before the next boundary are extended
+    /// (via a longer lead/bumper) so the next item starts exactly on the boundary. This keeps synced channels
+    /// aligned even when show lengths differ.
+    /// </summary>
+    /// <param name="programs">The looped item list.</param>
+    /// <param name="nowUtc">The current UTC time.</param>
+    /// <param name="endUtc">The exclusive UTC end of the projection window.</param>
+    /// <param name="epochUtc">The loop anchor.</param>
+    /// <param name="syncIntervalMinutes">The sync interval (0 for none).</param>
+    /// <returns>The schedule with padded items.</returns>
+    public static IReadOnlyList<ScheduledProgram> BuildSyncedSchedule(
+        IReadOnlyList<ProgramEntry> programs,
+        DateTime nowUtc,
+        DateTime endUtc,
+        DateTime epochUtc,
+        int syncIntervalMinutes)
+    {
+        if (syncIntervalMinutes <= 0)
+        {
+            return BuildSchedule(programs, nowUtc, endUtc, epochUtc);
+        }
+
+        ArgumentNullException.ThrowIfNull(programs);
+
+        var schedule = new List<ScheduledProgram>();
+        if (programs.Count == 0 || endUtc <= nowUtc)
+        {
+            return schedule;
+        }
+
+        var intervalTicks = TimeSpan.FromMinutes(syncIntervalMinutes).Ticks;
+        var (index, offset) = CurrentProgram(programs, nowUtc, epochUtc);
+        var start = nowUtc - offset;
+        var baseLead = ProgramLoop.LeadOf(programs);
+
+        while (start < endUtc && schedule.Count < MaxProgrammes)
+        {
+            var program = programs[index];
+            if (program.DurationTicks <= 0)
+            {
+                break;
+            }
+
+            // Calculate where the next sync boundary is
+            var elapsedSinceEpoch = (start - epochUtc).Ticks;
+            var positionInInterval = (elapsedSinceEpoch % intervalTicks + intervalTicks) % intervalTicks;
+            var ticksToBoundary = intervalTicks - positionInInterval;
+
+            // Natural slot duration (item + base lead)
+            var naturalSlotTicks = program.DurationTicks + baseLead;
+
+            // If the item would end before the boundary, pad with a longer lead
+            var leadTicks = baseLead;
+            if (naturalSlotTicks < ticksToBoundary)
+            {
+                leadTicks = ticksToBoundary - program.DurationTicks;
+            }
+
+            var stop = start + TimeSpan.FromTicks(program.DurationTicks + leadTicks);
+            schedule.Add(new ScheduledProgram(program, start, stop) { Lead = TimeSpan.FromTicks(leadTicks) });
+            start = stop;
+            index = (index + 1) % programs.Count;
+        }
+
+        return schedule;
+    }
 }

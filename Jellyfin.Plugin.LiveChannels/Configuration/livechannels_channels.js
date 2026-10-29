@@ -1073,6 +1073,7 @@ export default function (view) {
         el('keepMultiPart').checked = ch.KeepMultiPartTogether !== false;
         el('showBumpers').checked = ch.ShowBumpers !== false;
         el('syncInterval').value = ch.SyncIntervalMinutes || 0;
+        el('padToSyncBoundary').checked = !!ch.PadToSyncBoundary;
         el('includeEpisodes').checked = ch.IncludeEpisodes !== false;
         el('includeMovies').checked = ch.IncludeMovies !== false;
         el('includeSpecials').checked = !!ch.IncludeSpecials;
@@ -1122,6 +1123,7 @@ export default function (view) {
         ch.KeepMultiPartTogether = el('keepMultiPart').checked;
         ch.ShowBumpers = el('showBumpers').checked;
         ch.SyncIntervalMinutes = parseInt(el('syncInterval').value, 10) || 0;
+        ch.PadToSyncBoundary = el('padToSyncBoundary').checked;
         ch.IncludeEpisodes = el('includeEpisodes').checked;
         ch.IncludeMovies = el('includeMovies').checked;
         ch.IncludeSpecials = el('includeSpecials').checked;

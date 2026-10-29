@@ -34,6 +34,10 @@ public partial class ChannelService
         if (!HasTimeOfDayRating(blocks))
         {
             var anchor = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+            if (channel.PadToSyncBoundary && channel.SyncIntervalMinutes > 0)
+            {
+                return (ScheduleCalculator.BuildSyncedSchedule(programs, fromUtc, toUtc, anchor, channel.SyncIntervalMinutes), default);
+            }
             return (ScheduleCalculator.BuildSchedule(programs, fromUtc, toUtc, anchor), default);
         }
 

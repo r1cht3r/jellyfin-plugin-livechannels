@@ -223,6 +223,13 @@
                                     </select>
                                     <div class="fieldDescription">Aligns show transitions to time boundaries so multiple channels can be watched in sync (one ends as another starts). Use 20 or 30 minutes for half-hour shows without commercials.</div>
                                 </div>
+                                <div class="checkboxContainer checkboxContainer-withDescription">
+                                    <label class="emby-checkbox-label">
+                                        <input type="checkbox" is="emby-checkbox" id="padToSyncBoundary" />
+                                        <span class="checkboxLabel">Pad shorter shows to sync boundary</span>
+                                    </label>
+                                    <div class="fieldDescription">When a show ends before the next sync boundary, extend the Up Next bumper to fill the gap so the next show starts exactly on time. Keeps all synced channels aligned even with different-length content.</div>
+                                </div>
                                 <h3 class="jpk-subsection-title">Guide</h3>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="category">Category</label>

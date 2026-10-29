@@ -120,6 +120,9 @@ public class Channel
     /// <summary>Gets or sets the show alignment interval in minutes (0 = none). When set, the channel's schedule is anchored so that item transitions align to the specified time boundaries (e.g., every 20 or 30 minutes), enabling synchronized programming across channels without commercial breaks.</summary>
     public int SyncIntervalMinutes { get; set; }
 
+    /// <summary>Gets or sets a value indicating whether shorter shows are padded with an extended Up Next bumper to reach the next sync boundary. When enabled with SyncIntervalMinutes, shows that end before the boundary are extended so the next show starts exactly on the boundary, keeping all synced channels aligned.</summary>
+    public bool PadToSyncBoundary { get; set; }
+
     /// <summary>Gets or sets a value indicating whether the channel is served. Disabled channels are absent from Live TV and the guide.</summary>
     public bool Enabled { get; set; } = true;
 
