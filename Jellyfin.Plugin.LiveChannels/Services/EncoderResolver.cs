@@ -23,7 +23,8 @@ public class EncoderResolver
     private static readonly string[] Empty = Array.Empty<string>();
     private static readonly string[] VideotoolboxExtra = { "-allow_sw", "1" };
     private static readonly string[] QsvInit = { "-init_hw_device", "qsv=hw", "-filter_hw_device", "hw" };
-    private static readonly string[] KnownAccels = { "videotoolbox", "nvenc", "amf", "qsv", "vaapi" };
+    private static readonly string[] RkmppInit = { "-init_hw_device", "rkmpp=hw", "-filter_hw_device", "hw" };
+    private static readonly string[] KnownAccels = { "videotoolbox", "nvenc", "amf", "qsv", "vaapi", "rkmpp" };
 
     private readonly IServerConfigurationManager _config;
     private readonly ILogger<EncoderResolver> _logger;
@@ -114,6 +115,12 @@ public class EncoderResolver
                     "format=nv12,hwupload", false,
                     DecodeHwaccel: "vaapi", DecodeOutputFormat: "vaapi", DecodeDownload: "hwdownload,format=nv12|p010le,",
                     GpuDevice: device, VppBrightness: VppBrightness(options), VppContrast: VppContrast(options));
+            case "rkmpp":
+                // Rockchip MPP hardware encoder (RK3568, RK3588, etc.). Uses rkmpp hwdevice for encode.
+                return new VideoEncoderProfile(family + "_rkmpp", label + " (RKMPP)", true,
+                    RkmppInit, Empty,
+                    "format=nv12,hwupload", false,
+                    DecodeHwaccel: "rkmpp", DecodeOutputFormat: "rkmpp", DecodeDownload: "hwdownload,format=nv12|p010le,");
             default:
                 return Software(codec, options);
         }
@@ -233,6 +240,7 @@ public class EncoderResolver
             "amf" => ("AMF", true),
             "qsv" => ("QSV (Intel Quick Sync)", true),
             "vaapi" => ("VAAPI", true),
+            "rkmpp" => ("RKMPP (Rockchip MPP)", true),
             _ => ("Software (no hardware acceleration configured in Jellyfin)", false)
         };
     }
