@@ -22,6 +22,26 @@ public static class ScheduleCalculator
     /// <returns>The loop's anchor.</returns>
     public static DateTime AnchorFor(IReadOnlyList<ProgramEntry> programs) => ProgramLoop.AnchorOf(programs) ?? Epoch;
 
+    /// <summary>
+    /// The loop's anchor adjusted for show alignment: when <paramref name="syncIntervalMinutes"/> is non-zero,
+    /// the anchor is shifted forward to the next alignment boundary so item transitions fall on those boundaries.
+    /// </summary>
+    /// <param name="programs">The loop.</param>
+    /// <param name="syncIntervalMinutes">The alignment interval in minutes (0 for none).</param>
+    /// <returns>The adjusted anchor.</returns>
+    public static DateTime SyncedAnchorFor(IReadOnlyList<ProgramEntry> programs, int syncIntervalMinutes)
+    {
+        var anchor = AnchorFor(programs);
+        if (syncIntervalMinutes <= 0)
+        {
+            return anchor;
+        }
+
+        var intervalTicks = TimeSpan.FromMinutes(syncIntervalMinutes).Ticks;
+        var offset = ((anchor - Epoch).Ticks % intervalTicks + intervalTicks) % intervalTicks;
+        return anchor + TimeSpan.FromTicks(intervalTicks - offset);
+    }
+
     /// <summary>A hard cap on projected programmes so a channel of very short items can't produce an unbounded guide.</summary>
     private const int MaxProgrammes = 10000;
 

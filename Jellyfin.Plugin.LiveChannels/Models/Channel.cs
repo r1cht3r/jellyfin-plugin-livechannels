@@ -117,6 +117,9 @@ public class Channel
     /// <summary>Gets or sets a value indicating whether an Up Next bumper opens every item: 15 seconds showing the item's artwork, title, episode and rating. The bumper is part of the item's slot on the guide (a one-hour movie airs in a slot of one hour and fifteen seconds), so it never pushes the item later. On by default.</summary>
     public bool ShowBumpers { get; set; } = true;
 
+    /// <summary>Gets or sets the show alignment interval in minutes (0 = none). When set, the channel's schedule is anchored so that item transitions align to the specified time boundaries (e.g., every 20 or 30 minutes), enabling synchronized programming across channels without commercial breaks.</summary>
+    public int SyncIntervalMinutes { get; set; }
+
     /// <summary>Gets or sets a value indicating whether the channel is served. Disabled channels are absent from Live TV and the guide.</summary>
     public bool Enabled { get; set; } = true;
 

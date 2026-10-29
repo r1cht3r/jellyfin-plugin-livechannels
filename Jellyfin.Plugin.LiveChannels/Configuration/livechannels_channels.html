@@ -211,6 +211,18 @@
                                     </label>
                                     <div class="fieldDescription">Plays a 10 second card before each item showing its artwork, title, episode and rating. The card is part of the item's time in the guide, so the item still starts on schedule.</div>
                                 </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel" for="syncInterval">Show alignment interval</label>
+                                    <select id="syncInterval" class="jpk-selector-dropdown">
+                                        <option value="0">None</option>
+                                        <option value="15">Every 15 minutes</option>
+                                        <option value="20">Every 20 minutes</option>
+                                        <option value="30">Every 30 minutes</option>
+                                        <option value="45">Every 45 minutes</option>
+                                        <option value="60">Every hour</option>
+                                    </select>
+                                    <div class="fieldDescription">Aligns show transitions to time boundaries so multiple channels can be watched in sync (one ends as another starts). Use 20 or 30 minutes for half-hour shows without commercials.</div>
+                                </div>
                                 <h3 class="jpk-subsection-title">Guide</h3>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="category">Category</label>

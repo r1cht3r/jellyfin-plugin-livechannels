@@ -356,7 +356,8 @@ public class StreamSessionService
 
         if (!perItem)
         {
-            var (concatIndex, _) = ScheduleCalculator.CurrentProgram(programs, startUtc, ScheduleCalculator.AnchorFor(programs));
+            var syncedAnchor = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+            var (concatIndex, _) = ScheduleCalculator.CurrentProgram(programs, startUtc, syncedAnchor);
             LogEncodePlan(channel, programs.Count, concatIndex, perItem, uniform, hasHdr, stats);
             return await StreamConcatAsync(ffmpeg, channel, follower, output, cancellationToken, stats, timelineBase, anchor, headCredit, startUtc).ConfigureAwait(false);
         }
@@ -370,7 +371,8 @@ public class StreamSessionService
         }
         else
         {
-            var (index, offset) = ScheduleCalculator.CurrentProgram(programs, startUtc, ScheduleCalculator.AnchorFor(programs));
+            var syncedAnchor2 = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+            var (index, offset) = ScheduleCalculator.CurrentProgram(programs, startUtc, syncedAnchor2);
             schedule = new LoopStreamSchedule(programs, index, offset, startUtc, follower);
             planIndex = index;
         }
@@ -634,7 +636,8 @@ public class StreamSessionService
                 // the exact play order while turning the seek into an index hop inside the first file. The list
                 // is rewritten every (re)start because the rotation point is the current schedule position.
                 // The concat demuxer reads "file '<path>'" lines; single quotes in a path escape as '\''.
-                var (airing, airingOffset) = ScheduleCalculator.CurrentProgram(programs, target, ScheduleCalculator.AnchorFor(programs));
+                var syncedAnchor3 = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+                var (airing, airingOffset) = ScheduleCalculator.CurrentProgram(programs, target, syncedAnchor3);
 
                 // The item airing now may be missing (deleted or on unmounted storage): start at the next one that
                 // exists instead, and leave missing items out of the list (the concat demuxer cannot open one, and

@@ -33,7 +33,8 @@ public partial class ChannelService
         var blocks = ResolveRatingBlocks(channel);
         if (!HasTimeOfDayRating(blocks))
         {
-            return (ScheduleCalculator.BuildSchedule(programs, fromUtc, toUtc, ScheduleCalculator.AnchorFor(programs)), default);
+            var anchor = ScheduleCalculator.SyncedAnchorFor(programs, channel.SyncIntervalMinutes);
+            return (ScheduleCalculator.BuildSchedule(programs, fromUtc, toUtc, anchor), default);
         }
 
         // A spliced loop chains from its splice anchor (the start of the item airing when it was rebuilt), so a
@@ -45,6 +46,15 @@ public partial class ChannelService
         if (anchorUtc == default)
         {
             anchorUtc = fromUtc;
+        }
+
+        // Apply show alignment for daypart channels too.
+        if (channel.SyncIntervalMinutes > 0)
+        {
+            var intervalTicks = TimeSpan.FromMinutes(channel.SyncIntervalMinutes).Ticks;
+            var epochTicks = DateTime.UnixEpoch.Ticks;
+            var offset = ((anchorUtc.Ticks - epochTicks) % intervalTicks + intervalTicks) % intervalTicks;
+            anchorUtc = anchorUtc.AddTicks(intervalTicks - offset);
         }
 
         var schedule = DaypartSchedule.BuildResumable(programs, blocks, channel.TransitionWindowMinutes, TimeZoneInfo.Local, anchorUtc, fromUtc, toUtc, channel.Id, resume, out var state, MaxDaypartBlock(channel), exactStart: spliced is not null, keepMultiPart: channel.KeepMultiPartTogether);

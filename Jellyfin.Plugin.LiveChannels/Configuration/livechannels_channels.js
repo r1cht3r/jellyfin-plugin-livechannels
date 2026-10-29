@@ -1072,6 +1072,7 @@ export default function (view) {
         el('episodesPerBlock').value = ch.EpisodesPerBlock || 1;
         el('keepMultiPart').checked = ch.KeepMultiPartTogether !== false;
         el('showBumpers').checked = ch.ShowBumpers !== false;
+        el('syncInterval').value = ch.SyncIntervalMinutes || 0;
         el('includeEpisodes').checked = ch.IncludeEpisodes !== false;
         el('includeMovies').checked = ch.IncludeMovies !== false;
         el('includeSpecials').checked = !!ch.IncludeSpecials;
@@ -1120,6 +1121,7 @@ export default function (view) {
         ch.EpisodesPerBlock = Math.max(1, parseInt(el('episodesPerBlock').value, 10) || 1);
         ch.KeepMultiPartTogether = el('keepMultiPart').checked;
         ch.ShowBumpers = el('showBumpers').checked;
+        ch.SyncIntervalMinutes = parseInt(el('syncInterval').value, 10) || 0;
         ch.IncludeEpisodes = el('includeEpisodes').checked;
         ch.IncludeMovies = el('includeMovies').checked;
         ch.IncludeSpecials = el('includeSpecials').checked;
