@@ -15,8 +15,8 @@ public class Channel
     /// <summary>Gets or sets the channel display name.</summary>
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the channel number shown in the guide.</summary>
-    public int Number { get; set; }
+    /// <summary>Gets or sets the channel number shown in the guide. Supports subchannels (e.g. 1.1, 2.3).</summary>
+    public decimal Number { get; set; }
 
     /// <summary>Gets or sets an uploaded logo image as Base64 (no data URI prefix), set as the channel's image in Live TV. When empty, a generated square is used.</summary>
     public string LogoData { get; set; } = string.Empty;

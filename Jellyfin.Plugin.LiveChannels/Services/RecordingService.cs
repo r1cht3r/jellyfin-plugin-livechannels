@@ -66,7 +66,7 @@ public sealed partial class RecordingService : IDisposable
 
     // Non-reentrancy gate for the maintenance pass: the heartbeat and the post-create kick may overlap, and a
     // long copy must not stack a second pass behind it.
-    private readonly ConcurrentDictionary<int, (long Generation, IReadOnlyList<ProgramEntry> Programs)> _passPrograms = new();
+    private readonly ConcurrentDictionary<decimal, (long Generation, IReadOnlyList<ProgramEntry> Programs)> _passPrograms = new();
 
     // Set only on the recording pass's own flow (see ProgramsFor).
     private readonly AsyncLocal<bool> _inPass = new();

@@ -47,16 +47,16 @@ public partial class ChannelService
     // all. Static (the service is a singleton) so the static configuration-change handler can flush it alongside
     // the on-disk cache, ensuring a filter or channel edit is never served from a stale hot copy of a channel
     // that happens to be on screen.
-    private static readonly ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>> MemorySchedules = new();
+    private static readonly ConcurrentDictionary<decimal, IReadOnlyList<ProgramEntry>> MemorySchedules = new();
 
     // Hot copies a configuration save took out of service, kept only until each channel's rebuild splices onto it.
-    private static readonly ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>> SupersededSchedules = new();
+    private static readonly ConcurrentDictionary<decimal, IReadOnlyList<ProgramEntry>> SupersededSchedules = new();
 
     // Per channel, how many loops a refresh has written, so a disk read that started before a refresh cannot pin
     // the loop it read over the one the refresh just wrote.
-    private static readonly ConcurrentDictionary<int, long> ScheduleVersions = new();
+    private static readonly ConcurrentDictionary<decimal, long> ScheduleVersions = new();
 
-    private static long ScheduleVersion(int channelNumber) => ScheduleVersions.TryGetValue(channelNumber, out var v) ? v : 0;
+    private static long ScheduleVersion(decimal channelNumber) => ScheduleVersions.TryGetValue(channelNumber, out var v) ? v : 0;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChannelService"/> class.
@@ -325,5 +325,5 @@ public partial class ChannelService
     /// nothing in memory. The on-disk cache remains, so the next tune-in reloads it. A no-op when nothing is cached.
     /// </summary>
     /// <param name="channelNumber">The channel number whose hot schedule should be dropped.</param>
-    public void ReleaseFromMemory(int channelNumber) => MemorySchedules.TryRemove(channelNumber, out _);
+    public void ReleaseFromMemory(decimal channelNumber) => MemorySchedules.TryRemove(channelNumber, out _);
 }

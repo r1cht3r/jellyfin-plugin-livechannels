@@ -62,7 +62,7 @@ public static class ConfigurationValidator
             ValidateChannelLimits(popular);
         }
 
-        var numbers = new HashSet<int>();
+        var numbers = new HashSet<decimal>();
         foreach (var channel in config.Channels)
         {
             ValidateLogo(channel);

@@ -102,7 +102,7 @@ public sealed class IntroService : IDisposable
     // One render at a time: a guide refresh asks for every channel's card in one sweep, and thirty concurrent
     // ffmpegs would starve any live session running alongside.
     private readonly SemaphoreSlim _renderGate = new(1, 1);
-    private readonly ConcurrentDictionary<int, Task> _inFlight = new();
+    private readonly ConcurrentDictionary<decimal, Task> _inFlight = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IntroService"/> class.
@@ -191,7 +191,7 @@ public sealed class IntroService : IDisposable
         var task = _inFlight.GetOrAdd(channel.Number, _ => RenderAndForgetAsync(channel, logoPath, logoStamp, profile));
         if (task.IsCompleted)
         {
-            _inFlight.TryRemove(new KeyValuePair<int, Task>(channel.Number, task));
+            _inFlight.TryRemove(new KeyValuePair<decimal, Task>(channel.Number, task));
         }
 
         return task;
@@ -790,11 +790,11 @@ public sealed class IntroService : IDisposable
         }
     }
 
-    private string TsPath(int number) => Path.Combine(_root, number.ToString(CultureInfo.InvariantCulture) + ".ts");
+    private string TsPath(decimal number) => Path.Combine(_root, number.ToString(CultureInfo.InvariantCulture) + ".ts");
 
-    private string SidecarPath(int number) => Path.Combine(_root, number.ToString(CultureInfo.InvariantCulture) + ".json");
+    private string SidecarPath(decimal number) => Path.Combine(_root, number.ToString(CultureInfo.InvariantCulture) + ".json");
 
-    private Sidecar? ReadSidecar(int number)
+    private Sidecar? ReadSidecar(decimal number)
     {
         var path = SidecarPath(number);
         if (!File.Exists(path))

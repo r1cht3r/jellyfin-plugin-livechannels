@@ -452,7 +452,7 @@ export default function (view) {
         } else {
             // No upload: show the generated placeholder so the box is never empty.
             img.src = defaultLogoDataUrl(
-                parseInt(el('channelNumber').value, 10) || 0,
+                parseFloat(el('channelNumber').value) || 0,
                 el('channelName').value || '',
                 el('logoStyle').value,
                 el('logoSymbol').value,
@@ -1094,7 +1094,7 @@ export default function (view) {
 
     function readEditorInto(ch) {
         ch.Name = el('channelName').value.trim();
-        ch.Number = parseInt(el('channelNumber').value, 10) || 0;
+        ch.Number = parseFloat(el('channelNumber').value) || 0;
         ch.LogoData = logoData;
         ch.LogoContentType = logoContentType;
         ch.LogoStyle = el('logoStyle').value;

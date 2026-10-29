@@ -69,7 +69,7 @@ public class DefaultLogoService
     /// <param name="showName">Whether the channel name is drawn along the bottom.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The PNG bytes, or <c>null</c>.</returns>
-    public async Task<byte[]?> GetAsync(int number, string name, LogoStyle style, string symbol, bool showName, CancellationToken cancellationToken)
+    public async Task<byte[]?> GetAsync(decimal number, string name, LogoStyle style, string symbol, bool showName, CancellationToken cancellationToken)
     {
         name ??= string.Empty;
         symbol ??= string.Empty;
@@ -89,7 +89,7 @@ public class DefaultLogoService
         return null;
     }
 
-    private async Task<byte[]?> GenerateAsync(int number, string name, LogoStyle style, string symbol, bool showName, CancellationToken cancellationToken)
+    private async Task<byte[]?> GenerateAsync(decimal number, string name, LogoStyle style, string symbol, bool showName, CancellationToken cancellationToken)
     {
         var ffmpeg = _encoder.EncoderPath;
         if (string.IsNullOrEmpty(ffmpeg))
@@ -249,7 +249,7 @@ public class DefaultLogoService
 
     // The font and text drawn in the centre: the Material Icons glyph for a known symbol name, otherwise the
     // channel number in the regular font (also the fallback for an unknown symbol or a missing icon font).
-    private (string? Font, string Text, bool IsSymbol) ResolveCentre(int number, LogoStyle style, string symbol, string? textFont)
+    private (string? Font, string Text, bool IsSymbol) ResolveCentre(decimal number, LogoStyle style, string symbol, string? textFont)
     {
         if (style == LogoStyle.Symbol && !string.IsNullOrWhiteSpace(symbol)
             && GetIconCodepoints(_logger).TryGetValue(symbol.Trim(), out var codepoint))
