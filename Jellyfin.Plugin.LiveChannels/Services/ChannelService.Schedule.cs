@@ -138,6 +138,58 @@ public partial class ChannelService
         return false;
     }
 
+    /// <summary>
+    /// Auto-detects the optimal sync interval for a sync group by analyzing the content lengths of all
+    /// channels in the group. Recommends the smallest standard interval that accommodates the longest
+    /// typical program in the group with minimal padding (less than 2 minutes).
+    /// </summary>
+    /// <param name="channels">All channels in the sync group.</param>
+    /// <param name="resolvedPrograms">Dictionary of channel ID to resolved programs.</param>
+    /// <returns>The recommended sync interval in minutes (0 = none).</returns>
+    public int AutoDetectSyncInterval(IReadOnlyList<Channel> channels, Dictionary<string, IReadOnlyList<ProgramEntry>> resolvedPrograms)
+    {
+        if (channels == null || channels.Count == 0)
+        {
+            return 0;
+        }
+
+        // Collect all program durations from all channels in the group
+        var allDurations = new List<double>();
+        foreach (var channel in channels)
+        {
+            if (resolvedPrograms.TryGetValue(channel.Id, out var programs) && programs != null)
+            {
+                foreach (var program in programs)
+                {
+                    allDurations.Add(TimeSpan.FromTicks(program.DurationTicks).TotalMinutes);
+                }
+            }
+        }
+
+        if (allDurations.Count == 0)
+        {
+            return 0;
+        }
+
+        // Find the 90th percentile duration (typical longest program)
+        allDurations.Sort();
+        var percentileIndex = (int)(allDurations.Count * 0.9);
+        var typicalLongestDuration = allDurations[Math.Min(percentileIndex, allDurations.Count - 1)];
+
+        // Recommend the smallest standard interval that's >= typical longest + 2 minutes padding
+        var candidates = new[] { 15, 20, 23, 25, 30, 45, 60 };
+        foreach (var interval in candidates)
+        {
+            if (interval >= typicalLongestDuration + 2)
+            {
+                return interval;
+            }
+        }
+
+        // If programs are very long (>60 min), don't recommend sync
+        return 0;
+    }
+
     // The single rating band for a channel whose blocks are all all-day: the overlap-combined window (lowest min,
     // lowest max, unrated only if all allow), applied once at build time exactly like the legacy min/max fields.
     private RatingFilter EffectiveSingleBandFilter(IReadOnlyList<ResolvedRatingBlock> blocks)

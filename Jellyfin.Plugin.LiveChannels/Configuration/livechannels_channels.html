@@ -217,6 +217,8 @@
                                         <option value="0">None</option>
                                         <option value="15">Every 15 minutes</option>
                                         <option value="20">Every 20 minutes</option>
+                                        <option value="23">Every 23 minutes</option>
+                                        <option value="25">Every 25 minutes</option>
                                         <option value="30">Every 30 minutes</option>
                                         <option value="45">Every 45 minutes</option>
                                         <option value="60">Every hour</option>
@@ -230,6 +232,15 @@
                                     </label>
                                     <div class="fieldDescription">When a show ends before the next sync boundary, extend the Up Next bumper to fill the gap so the next show starts exactly on time. Keeps all synced channels aligned even with different-length content.</div>
                                 </div>
+                                <div class="inputContainer">
+                                    <label class="inputLabel" for="syncGroup">Sync group</label>
+                                    <input is="emby-input" type="text" id="syncGroup" autocomplete="off" />
+                                    <div class="fieldDescription">Channels with the same sync group name are synchronized together. Leave empty for no sync. Use this to group channels that should start/end shows at the same time.</div>
+                                </div>
+                                <button is="emby-button" type="button" id="btnAutoSyncInterval" class="raised small">
+                                    <span>Auto-detect sync interval</span>
+                                </button>
+                                <div id="syncIntervalStatus" class="fieldDescription"></div>
                                 <h3 class="jpk-subsection-title">Guide</h3>
                                 <div class="selectContainer">
                                     <label class="selectLabel" for="category">Category</label>

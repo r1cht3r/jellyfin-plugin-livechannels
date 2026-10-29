@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Plugin.LiveChannels.Models;
 using Jellyfin.Plugin.LiveChannels.Services;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Tasks;
@@ -23,6 +26,7 @@ public class LiveChannelsController : ControllerBase
 {
     private readonly EncoderResolver _encoders;
     private readonly LiveChannelsTvService _tv;
+    private readonly ChannelService _channels;
     private readonly StressTestService _stress;
     private readonly ITaskManager _taskManager;
     private readonly IApplicationPaths _paths;
@@ -32,13 +36,15 @@ public class LiveChannelsController : ControllerBase
     /// </summary>
     /// <param name="encoders">The encoder resolver, used to report the active hardware acceleration.</param>
     /// <param name="tv">The Live TV service, which owns the active channel streams.</param>
+    /// <param name="channels">The channel service, used for program resolution and sync recommendations.</param>
     /// <param name="stress">The encoder stress test the settings page can run.</param>
     /// <param name="taskManager">The scheduled task manager, which Reset schedule starts the guide and card tasks through.</param>
     /// <param name="paths">The application paths, which locate the schedule cache Reset schedule clears.</param>
-    public LiveChannelsController(EncoderResolver encoders, LiveChannelsTvService tv, StressTestService stress, ITaskManager taskManager, IApplicationPaths paths)
+    public LiveChannelsController(EncoderResolver encoders, LiveChannelsTvService tv, ChannelService channels, StressTestService stress, ITaskManager taskManager, IApplicationPaths paths)
     {
         _encoders = encoders;
         _tv = tv;
+        _channels = channels;
         _stress = stress;
         _taskManager = taskManager;
         _paths = paths;
@@ -234,5 +240,46 @@ public class LiveChannelsController : ControllerBase
         }
 
         return "image/png";
+    }
+
+    /// <summary>
+    /// Auto-detects the optimal sync interval for a sync group by analyzing content lengths.
+    /// </summary>
+    /// <param name="syncGroup">The sync group name.</param>
+    /// <returns>The recommended sync interval in minutes.</returns>
+    [HttpGet("sync-recommendation")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public ActionResult<int> GetSyncRecommendation([FromQuery] string syncGroup)
+    {
+        if (string.IsNullOrEmpty(syncGroup))
+        {
+            return BadRequest("syncGroup is required");
+        }
+
+        var channels = Plugin.Instance?.ReadConfiguration(c => c.Channels) ?? new List<Channel>();
+        var groupChannels = channels.Where(c => c.SyncGroup == syncGroup && c.Enabled).ToList();
+
+        if (groupChannels.Count == 0)
+        {
+            return Ok(0);
+        }
+
+        // Resolve programs for each channel in the group
+        var resolvedPrograms = new Dictionary<string, IReadOnlyList<ProgramEntry>>();
+        foreach (var channel in groupChannels)
+        {
+            try
+            {
+                var programs = _channels.ResolvePrograms(channel);
+                resolvedPrograms[channel.Id] = programs;
+            }
+            catch
+            {
+                // Skip channels that fail to resolve
+            }
+        }
+
+        var recommendation = _channels.AutoDetectSyncInterval(groupChannels, resolvedPrograms);
+        return Ok(recommendation);
     }
 }

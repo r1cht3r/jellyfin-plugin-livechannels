@@ -123,6 +123,9 @@ public class Channel
     /// <summary>Gets or sets a value indicating whether shorter shows are padded with an extended Up Next bumper to reach the next sync boundary. When enabled with SyncIntervalMinutes, shows that end before the boundary are extended so the next show starts exactly on the boundary, keeping all synced channels aligned.</summary>
     public bool PadToSyncBoundary { get; set; }
 
+    /// <summary>Gets or sets the sync group name. Channels with the same non-empty sync group name are synchronized together - they share the same schedule anchor and can auto-detect the optimal sync interval based on all channels' content lengths in the group.</summary>
+    public string SyncGroup { get; set; } = string.Empty;
+
     /// <summary>Gets or sets a value indicating whether the channel is served. Disabled channels are absent from Live TV and the guide.</summary>
     public bool Enabled { get; set; } = true;
 

@@ -1074,6 +1074,7 @@ export default function (view) {
         el('showBumpers').checked = ch.ShowBumpers !== false;
         el('syncInterval').value = ch.SyncIntervalMinutes || 0;
         el('padToSyncBoundary').checked = !!ch.PadToSyncBoundary;
+        el('syncGroup').value = ch.SyncGroup || '';
         el('includeEpisodes').checked = ch.IncludeEpisodes !== false;
         el('includeMovies').checked = ch.IncludeMovies !== false;
         el('includeSpecials').checked = !!ch.IncludeSpecials;
@@ -1124,6 +1125,7 @@ export default function (view) {
         ch.ShowBumpers = el('showBumpers').checked;
         ch.SyncIntervalMinutes = parseInt(el('syncInterval').value, 10) || 0;
         ch.PadToSyncBoundary = el('padToSyncBoundary').checked;
+        ch.SyncGroup = el('syncGroup').value.trim();
         ch.IncludeEpisodes = el('includeEpisodes').checked;
         ch.IncludeMovies = el('includeMovies').checked;
         ch.IncludeSpecials = el('includeSpecials').checked;
@@ -1407,6 +1409,31 @@ export default function (view) {
         el('btnSaveChannel').addEventListener('click', saveChannel);
         el('btnAddLibrary').addEventListener('click', addLibrary);
         el('btnEnable').addEventListener('click', function () { currentEnabled = !currentEnabled; setEnableVisual(currentEnabled); });
+        el('btnAutoSyncInterval').addEventListener('click', async function () {
+            var syncGroup = el('syncGroup').value.trim();
+            if (!syncGroup) {
+                el('syncIntervalStatus').textContent = 'Enter a sync group name first.';
+                return;
+            }
+
+            el('syncIntervalStatus').textContent = 'Analyzing content...';
+            try {
+                var response = await fetch(`/api/livechannels/sync-recommendation?syncGroup=${encodeURIComponent(syncGroup)}`);
+                if (response.ok) {
+                    var interval = await response.json();
+                    if (interval > 0) {
+                        el('syncInterval').value = interval;
+                        el('syncIntervalStatus').textContent = `Recommended: every ${interval} minutes (based on content lengths in sync group "${syncGroup}")`;
+                    } else {
+                        el('syncIntervalStatus').textContent = 'No sync interval recommended (content too long or varied).';
+                    }
+                } else {
+                    el('syncIntervalStatus').textContent = 'Failed to analyze sync group.';
+                }
+            } catch (e) {
+                el('syncIntervalStatus').textContent = 'Error analyzing sync group.';
+            }
+        });
 
         // Warm the Material Symbols web font (the same glyphs the server draws), then refresh the preview so a
         // symbol logo renders once it has loaded rather than briefly falling back to the number.
