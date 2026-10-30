@@ -60,6 +60,7 @@ public class EncoderResolver
         var accel = allowHardware && !disabled ? Detect(options) : "none";
         var family = codec == VideoCodec.Hevc ? "hevc" : "h264";
         var label = codec == VideoCodec.Hevc ? "HEVC" : "H.264";
+        _logger.LogDebug("Resolving video encoder: codec={Codec}, allowHardware={AllowHardware}, disabled={Disabled}, accel={Accel}", codec, allowHardware, disabled, accel);
 
         // Detect never returns an accelerator without options, so past this guard options is non-null and the
         // hardware branches can read it directly (a null-conditional there would be a provably constant check).
