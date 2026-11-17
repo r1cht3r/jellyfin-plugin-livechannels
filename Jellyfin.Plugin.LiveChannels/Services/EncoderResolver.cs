@@ -22,6 +22,7 @@ public class EncoderResolver
     private static readonly string[] Empty = Array.Empty<string>();
     private static readonly string[] VideotoolboxExtra = { "-allow_sw", "1" };
     private static readonly string[] QsvInit = { "-init_hw_device", "qsv=hw", "-filter_hw_device", "hw" };
+    private static readonly string[] RkmppRateControl = { "-rc_mode", "1", "-qp_init", "22" };
     private static readonly string[] KnownAccels = { "videotoolbox", "nvenc", "amf", "qsv", "vaapi", "rkmpp" };
 
     private readonly IServerConfigurationManager _config;
@@ -117,7 +118,7 @@ public class EncoderResolver
                 // Rockchip RKMPP: MPP encoders accept nv12 in system memory (no hwupload), like NVENC.
                 // Rate control uses rc_mode=1 (CBR) for stable output; qp_init controls quality (lower = better).
                 return new VideoEncoderProfile(family + "_rkmpp", label + " (RKMPP)", true,
-                    Empty, new[] { "-rc_mode", "1", "-qp_init", "22" }, "format=nv12", false);
+                    Empty, RkmppRateControl, "format=nv12", false);
             default:
                 return Software(codec, options);
         }
