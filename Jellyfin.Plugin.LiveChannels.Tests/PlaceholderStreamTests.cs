@@ -128,7 +128,7 @@ public sealed class PlaceholderStreamTests : IClassFixture<MediaFixtures>
     {
         var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
             .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-        schedules[channel.Number.ToString()] = loop;
+        schedules[channel.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)] = loop;
         try
         {
             using var cts = new CancellationTokenSource();
@@ -153,7 +153,7 @@ public sealed class PlaceholderStreamTests : IClassFixture<MediaFixtures>
         }
         finally
         {
-            schedules.TryRemove(channel.Number.ToString(), out _);
+            schedules.TryRemove(channel.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), out _);
             if (Environment.GetEnvironmentVariable("LIVECHANNELS_PLACEHOLDER_PREVIEW") is { Length: > 0 } keep && File.Exists(log))
             {
                 Directory.CreateDirectory(keep);
