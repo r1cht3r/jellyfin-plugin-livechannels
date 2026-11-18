@@ -127,7 +127,7 @@ public sealed class BumperStreamTests : IClassFixture<MediaFixtures>
     {
         var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
             .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-        schedules[channel.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)] = loop;
+        schedules[channel.NumberKey] = loop;
         try
         {
             service ??= NewService(ff, out _);
@@ -149,7 +149,7 @@ public sealed class BumperStreamTests : IClassFixture<MediaFixtures>
         }
         finally
         {
-            schedules.TryRemove(channel.Number.ToString(System.Globalization.CultureInfo.InvariantCulture), out _);
+            schedules.TryRemove(channel.NumberKey, out _);
         }
     }
 

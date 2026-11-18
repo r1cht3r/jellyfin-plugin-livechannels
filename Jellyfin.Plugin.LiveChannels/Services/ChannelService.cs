@@ -146,7 +146,7 @@ public partial class ChannelService
     public IReadOnlyList<ProgramEntry> ResolvePrograms(Channel channel, bool keepInMemory = true)
     {
         ArgumentNullException.ThrowIfNull(channel);
-        if (MemorySchedules.TryGetValue(channel.Number.ToString(CultureInfo.InvariantCulture), out var hot))
+        if (MemorySchedules.TryGetValue(channel.NumberKey, out var hot))
         {
             return hot;
         }
@@ -188,7 +188,7 @@ public partial class ChannelService
         // schedule would serve it to every later tune-in until the next guide refresh.
         if (keepInMemory && CacheGeneration == generation && (cached is null || ScheduleVersion(channel.Number) == version))
         {
-            MemorySchedules[channel.Number.ToString(CultureInfo.InvariantCulture)] = programs;
+            MemorySchedules[channel.NumberKey] = programs;
         }
 
         return programs;
@@ -218,7 +218,7 @@ public partial class ChannelService
 
         // The loop to splice onto: the one in service, else the one a configuration save set aside, so a save
         // (a channel edit, a language change) does not move what is airing either.
-        IReadOnlyList<ProgramEntry>? previous = MemorySchedules.TryGetValue(channel.Number.ToString(CultureInfo.InvariantCulture), out var hotPrevious)
+        IReadOnlyList<ProgramEntry>? previous = MemorySchedules.TryGetValue(channel.NumberKey, out var hotPrevious)
             ? hotPrevious
             : (IReadOnlyList<ProgramEntry>?)TryReadScheduleCache(channel) ?? SupersededLoop(channel);
         var programs = Splice(channel, previous, BuildPrograms(channel), DateTime.UtcNow, LeadFor(channel));
@@ -231,16 +231,16 @@ public partial class ChannelService
         }
 
         ForgetSuperseded(channel);
-        ScheduleVersions.AddOrUpdate(channel.Number.ToString(CultureInfo.InvariantCulture), 1, (_, v) => v + 1);
+        ScheduleVersions.AddOrUpdate(channel.NumberKey, 1, (_, v) => v + 1);
 
         // Update the hot copy only for a channel that is already hot (someone is watching it, or it was tuned
         // recently), so its live viewers see the fresh schedule without a disk round-trip. A channel that is
         // NOT hot is deliberately left cold: pinning every enabled channel here kept several MB of decoded
         // schedule per large channel in memory forever, refreshed daily, for channels nobody ever tuned. A cold
         // channel's next tune-in reads the just-written disk cache (a fast parse, logged when slow), not a rebuild.
-        if (MemorySchedules.TryGetValue(channel.Number.ToString(CultureInfo.InvariantCulture), out var hot))
+        if (MemorySchedules.TryGetValue(channel.NumberKey, out var hot))
         {
-            MemorySchedules.TryUpdate(channel.Number.ToString(CultureInfo.InvariantCulture), programs, hot);
+            MemorySchedules.TryUpdate(channel.NumberKey, programs, hot);
         }
 
         return programs;

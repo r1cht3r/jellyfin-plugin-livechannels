@@ -495,13 +495,13 @@ public sealed partial class RecordingService : IDisposable
         }
 
         var generation = ChannelService.CacheGeneration;
-        if (_passPrograms.TryGetValue(channel.Number.ToString(CultureInfo.InvariantCulture), out var cached) && cached.Generation == generation)
+        if (_passPrograms.TryGetValue(channel.NumberKey, out var cached) && cached.Generation == generation)
         {
             return cached.Programs;
         }
 
         var programs = _channels.ResolvePrograms(channel, keepInMemory: false);
-        _passPrograms[channel.Number.ToString(CultureInfo.InvariantCulture)] = (generation, programs);
+        _passPrograms[channel.NumberKey] = (generation, programs);
         return programs;
     }
 

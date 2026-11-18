@@ -75,7 +75,7 @@ public static class ConfigurationValidator
                 continue;
             }
 
-            if (double.IsNaN(channel.Number) || channel.Number <= 0 || channel.Number > 99999)
+            if (double.IsNaN(channel.Number) || double.IsInfinity(channel.Number) || channel.Number <= 0 || channel.Number > 99999)
             {
                 throw new ArgumentException("Invalid channel number: " + channel.Number + " for " + Describe(channel));
             }

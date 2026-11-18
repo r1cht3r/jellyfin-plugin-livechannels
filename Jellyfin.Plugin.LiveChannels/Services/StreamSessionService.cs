@@ -568,7 +568,7 @@ public class StreamSessionService
         // is skipped only when playback reaches it (see FirstPlayable).
         var listFile = Path.Combine(
             _workDir,
-            "livechannels-" + channel.Number.ToString(CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N") + ".txt");
+            "livechannels-" + channel.NumberKey + "-" + Guid.NewGuid().ToString("N") + ".txt");
         try
         {
             Directory.CreateDirectory(_workDir);

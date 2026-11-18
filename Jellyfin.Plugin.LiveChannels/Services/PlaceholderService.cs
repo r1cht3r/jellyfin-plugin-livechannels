@@ -482,7 +482,7 @@ public sealed class PlaceholderService : IDisposable
         }
     }
 
-    private string ChannelDir(Channel channel) => Path.Combine(_root, "ch" + channel.Number.ToString(CultureInfo.InvariantCulture));
+    private string ChannelDir(Channel channel) => Path.Combine(_root, "ch" + channel.NumberKey);
 
     private void TryDelete(string path)
     {

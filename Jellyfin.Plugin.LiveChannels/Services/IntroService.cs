@@ -136,8 +136,8 @@ public sealed class IntroService : IDisposable
         ArgumentNullException.ThrowIfNull(channel);
         try
         {
-            var sidecar = ReadSidecar(channel.Number.ToString(CultureInfo.InvariantCulture));
-            var ts = TsPath(channel.Number.ToString(CultureInfo.InvariantCulture));
+            var sidecar = ReadSidecar(channel.NumberKey);
+            var ts = TsPath(channel.NumberKey);
             if (sidecar is null || sidecar.Revision != Revision || !string.Equals(sidecar.Profile, CurrentProfile().Key, StringComparison.Ordinal) || !File.Exists(ts))
             {
                 return null;
@@ -173,12 +173,12 @@ public sealed class IntroService : IDisposable
         var logoStamp = LogoStamp(logoPath);
         try
         {
-            var sidecar = ReadSidecar(channel.Number.ToString(CultureInfo.InvariantCulture));
+            var sidecar = ReadSidecar(channel.NumberKey);
             if (sidecar is not null
                 && sidecar.Revision == Revision
                 && string.Equals(sidecar.Profile, profile.Key, StringComparison.Ordinal)
                 && string.Equals(sidecar.LogoStamp, logoStamp, StringComparison.Ordinal)
-                && File.Exists(TsPath(channel.Number.ToString(CultureInfo.InvariantCulture))))
+                && File.Exists(TsPath(channel.NumberKey)))
             {
                 return Task.CompletedTask;
             }
@@ -191,10 +191,10 @@ public sealed class IntroService : IDisposable
         // A render that fails before its first real await completes synchronously, so its own finally runs before
         // GetOrAdd stores it and the completed task would sit in the map forever, blocking every later re-render
         // of this channel. Drop it here in that case (only if it is still the stored entry).
-        var task = _inFlight.GetOrAdd(channel.Number.ToString(CultureInfo.InvariantCulture), _ => RenderAndForgetAsync(channel, logoPath, logoStamp, profile));
+        var task = _inFlight.GetOrAdd(channel.NumberKey, _ => RenderAndForgetAsync(channel, logoPath, logoStamp, profile));
         if (task.IsCompleted)
         {
-            _inFlight.TryRemove(new KeyValuePair<string, Task>(channel.Number.ToString(CultureInfo.InvariantCulture), task));
+            _inFlight.TryRemove(new KeyValuePair<string, Task>(channel.NumberKey, task));
         }
 
         return task;
@@ -221,7 +221,7 @@ public sealed class IntroService : IDisposable
         }
         finally
         {
-            _inFlight.TryRemove(channel.Number.ToString(CultureInfo.InvariantCulture), out _);
+            _inFlight.TryRemove(channel.NumberKey, out _);
         }
     }
 
@@ -231,7 +231,7 @@ public sealed class IntroService : IDisposable
         Directory.CreateDirectory(_root);
         var stopwatch = Stopwatch.StartNew();
         var token = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-        var prefix = Path.Combine(_root, channel.Number.ToString(CultureInfo.InvariantCulture) + "-" + token);
+        var prefix = Path.Combine(_root, channel.NumberKey + "-" + token);
         var labelFile = prefix + ".countdown-label.txt";
         var numberFile = prefix + ".countdown-number.txt";
         var source = prefix + ".src.mp4";
@@ -281,12 +281,12 @@ public sealed class IntroService : IDisposable
             // chains its timeline from; chaining from the nominal length instead overlaps the last audio frame.
             var end = ScanEndSeconds(rendered) ?? (IntroSeconds + 0.1);
 
-            var final = TsPath(channel.Number.ToString(CultureInfo.InvariantCulture));
+            var final = TsPath(channel.NumberKey);
             File.Move(rendered, final, overwrite: true);
             var sidecar = new Sidecar(Revision, profile.Key, logoStamp, IntroSeconds, end);
-            var sidecarTmp = SidecarPath(channel.Number.ToString(CultureInfo.InvariantCulture)) + ".tmp";
+            var sidecarTmp = SidecarPath(channel.NumberKey) + ".tmp";
             await File.WriteAllTextAsync(sidecarTmp, JsonSerializer.Serialize(sidecar)).ConfigureAwait(false);
-            File.Move(sidecarTmp, SidecarPath(channel.Number.ToString(CultureInfo.InvariantCulture)), overwrite: true);
+            File.Move(sidecarTmp, SidecarPath(channel.NumberKey), overwrite: true);
 
             _logger.LogInformation(
                 "Live Channels: rendered the tune-in card for {Name} ({Encoder}, ends at {End:F3}s) in {Seconds:F1}s",
