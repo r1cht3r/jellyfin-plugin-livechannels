@@ -16,7 +16,7 @@ namespace Jellyfin.Plugin.LiveChannels.Tests;
 public class AdoptTeardownRaceTests
 {
     private static LiveChannelsTvService.LiveSession NewSession()
-        => new("lc_test", new CancellationTokenSource(), Task.Delay(Timeout.Infinite), "/tmp/lc_test", "Test", "chan", 1, DateTime.UtcNow, new SessionStats());
+        => new("lc_test", new CancellationTokenSource(), Task.Delay(Timeout.Infinite), "/tmp/lc_test", "Test", "chan", "1", DateTime.UtcNow, new SessionStats());
 
     [Fact]
     public void TornDownSession_RefusesANewConsumer()

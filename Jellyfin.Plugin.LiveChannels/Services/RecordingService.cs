@@ -65,7 +65,7 @@ public sealed partial class RecordingService : IDisposable
     private readonly ILogger<RecordingService> _logger;
 
     // Each channel's loop as the current pass read it, keyed by channel number (see ProgramsFor).
-    private readonly ConcurrentDictionary<int, (long Generation, IReadOnlyList<ProgramEntry> Programs)> _passPrograms = new();
+    private readonly ConcurrentDictionary<string, (long Generation, IReadOnlyList<ProgramEntry> Programs)> _passPrograms = new();
 
     // Set only on the recording pass's own flow (see ProgramsFor).
     private readonly AsyncLocal<bool> _inPass = new();
@@ -495,13 +495,13 @@ public sealed partial class RecordingService : IDisposable
         }
 
         var generation = ChannelService.CacheGeneration;
-        if (_passPrograms.TryGetValue(channel.Number, out var cached) && cached.Generation == generation)
+        if (_passPrograms.TryGetValue(channel.NumberKey, out var cached) && cached.Generation == generation)
         {
             return cached.Programs;
         }
 
         var programs = _channels.ResolvePrograms(channel, keepInMemory: false);
-        _passPrograms[channel.Number] = (generation, programs);
+        _passPrograms[channel.NumberKey] = (generation, programs);
         return programs;
     }
 

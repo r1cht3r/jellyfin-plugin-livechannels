@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -48,16 +49,16 @@ public partial class ChannelService
     // all. Static (the service is a singleton) so the static configuration-change handler can flush it alongside
     // the on-disk cache, ensuring a filter or channel edit is never served from a stale hot copy of a channel
     // that happens to be on screen.
-    private static readonly ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>> MemorySchedules = new();
+    private static readonly ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>> MemorySchedules = new();
 
     // Hot copies a configuration save took out of service, kept only until each channel's rebuild splices onto it.
-    private static readonly ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>> SupersededSchedules = new();
+    private static readonly ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>> SupersededSchedules = new();
 
     // Per channel, how many loops a refresh has written, so a disk read that started before a refresh cannot pin
     // the loop it read over the one the refresh just wrote.
-    private static readonly ConcurrentDictionary<int, long> ScheduleVersions = new();
+    private static readonly ConcurrentDictionary<string, long> ScheduleVersions = new();
 
-    private static long ScheduleVersion(int channelNumber) => ScheduleVersions.TryGetValue(channelNumber, out var v) ? v : 0;
+    private static long ScheduleVersion(double channelNumber) => ScheduleVersions.TryGetValue(channelNumber.ToString(CultureInfo.InvariantCulture), out var v) ? v : 0;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChannelService"/> class.
@@ -145,7 +146,7 @@ public partial class ChannelService
     public IReadOnlyList<ProgramEntry> ResolvePrograms(Channel channel, bool keepInMemory = true)
     {
         ArgumentNullException.ThrowIfNull(channel);
-        if (MemorySchedules.TryGetValue(channel.Number, out var hot))
+        if (MemorySchedules.TryGetValue(channel.NumberKey, out var hot))
         {
             return hot;
         }
@@ -187,7 +188,7 @@ public partial class ChannelService
         // schedule would serve it to every later tune-in until the next guide refresh.
         if (keepInMemory && CacheGeneration == generation && (cached is null || ScheduleVersion(channel.Number) == version))
         {
-            MemorySchedules[channel.Number] = programs;
+            MemorySchedules[channel.NumberKey] = programs;
         }
 
         return programs;
@@ -217,7 +218,7 @@ public partial class ChannelService
 
         // The loop to splice onto: the one in service, else the one a configuration save set aside, so a save
         // (a channel edit, a language change) does not move what is airing either.
-        IReadOnlyList<ProgramEntry>? previous = MemorySchedules.TryGetValue(channel.Number, out var hotPrevious)
+        IReadOnlyList<ProgramEntry>? previous = MemorySchedules.TryGetValue(channel.NumberKey, out var hotPrevious)
             ? hotPrevious
             : (IReadOnlyList<ProgramEntry>?)TryReadScheduleCache(channel) ?? SupersededLoop(channel);
         var programs = Splice(channel, previous, BuildPrograms(channel), DateTime.UtcNow, LeadFor(channel));
@@ -230,16 +231,16 @@ public partial class ChannelService
         }
 
         ForgetSuperseded(channel);
-        ScheduleVersions.AddOrUpdate(channel.Number, 1, (_, v) => v + 1);
+        ScheduleVersions.AddOrUpdate(channel.NumberKey, 1, (_, v) => v + 1);
 
         // Update the hot copy only for a channel that is already hot (someone is watching it, or it was tuned
         // recently), so its live viewers see the fresh schedule without a disk round-trip. A channel that is
         // NOT hot is deliberately left cold: pinning every enabled channel here kept several MB of decoded
         // schedule per large channel in memory forever, refreshed daily, for channels nobody ever tuned. A cold
         // channel's next tune-in reads the just-written disk cache (a fast parse, logged when slow), not a rebuild.
-        if (MemorySchedules.TryGetValue(channel.Number, out var hot))
+        if (MemorySchedules.TryGetValue(channel.NumberKey, out var hot))
         {
-            MemorySchedules.TryUpdate(channel.Number, programs, hot);
+            MemorySchedules.TryUpdate(channel.NumberKey, programs, hot);
         }
 
         return programs;
@@ -338,5 +339,5 @@ public partial class ChannelService
     /// nothing in memory. The on-disk cache remains, so the next tune-in reloads it. A no-op when nothing is cached.
     /// </summary>
     /// <param name="channelNumber">The channel number whose hot schedule should be dropped.</param>
-    public void ReleaseFromMemory(int channelNumber) => MemorySchedules.TryRemove(channelNumber, out _);
+    public void ReleaseFromMemory(double channelNumber) => MemorySchedules.TryRemove(channelNumber.ToString(CultureInfo.InvariantCulture), out _);
 }

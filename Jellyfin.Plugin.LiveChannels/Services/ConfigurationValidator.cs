@@ -62,7 +62,7 @@ public static class ConfigurationValidator
             ValidateChannelLimits(popular);
         }
 
-        var numbers = new HashSet<int>();
+        var numbers = new HashSet<double>();
         foreach (var channel in config.Channels)
         {
             ValidateLogo(channel);
@@ -75,9 +75,9 @@ public static class ConfigurationValidator
                 continue;
             }
 
-            if (channel.Number <= 0)
+            if (double.IsNaN(channel.Number) || double.IsInfinity(channel.Number) || channel.Number <= 0 || channel.Number > 99999)
             {
-                throw new ArgumentException("Enabled channel needs a channel number: " + Describe(channel));
+                throw new ArgumentException("Invalid channel number: " + channel.Number + " for " + Describe(channel));
             }
 
             if (channel.Sources.Count == 0)

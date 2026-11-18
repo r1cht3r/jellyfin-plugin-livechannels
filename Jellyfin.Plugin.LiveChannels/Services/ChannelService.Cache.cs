@@ -325,7 +325,7 @@ public partial class ChannelService
 
     // The on-disk path of one channel's schedule file, named by channel number (e.g. .../schedule/0.json).
     private string ScheduleFileFor(Channel channel)
-        => Path.Combine(_scheduleDir, channel.Number.ToString(CultureInfo.InvariantCulture) + ".json");
+        => Path.Combine(_scheduleDir, channel.NumberKey + ".json");
 
     // Where a cleared schedule waits for its rebuild (e.g. .../schedule/0.superseded).
     private string SupersededFileFor(Channel channel) => Path.ChangeExtension(ScheduleFileFor(channel), SupersededExtension);
@@ -339,7 +339,7 @@ public partial class ChannelService
     /// <returns>The superseded loop, or <c>null</c>.</returns>
     internal IReadOnlyList<ProgramEntry>? SupersededLoop(Channel channel)
     {
-        if (SupersededSchedules.TryGetValue(channel.Number, out var hot))
+        if (SupersededSchedules.TryGetValue(channel.NumberKey, out var hot))
         {
             return hot;
         }
@@ -351,7 +351,7 @@ public partial class ChannelService
     // Drops a channel's superseded schedule once its rebuild is written.
     private void ForgetSuperseded(Channel channel)
     {
-        SupersededSchedules.TryRemove(channel.Number, out _);
+        SupersededSchedules.TryRemove(channel.NumberKey, out _);
         try
         {
             File.Delete(SupersededFileFor(channel));

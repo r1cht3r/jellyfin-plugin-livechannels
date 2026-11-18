@@ -580,7 +580,7 @@ public sealed class BumperService : IDisposable
     // The sidecar a card keeps its artwork shape in.
     private static string ShapePath(string card) => card + ".shape";
 
-    private string ChannelDir(Channel channel) => Path.Combine(_root, "ch" + channel.Number.ToString(CultureInfo.InvariantCulture));
+    private string ChannelDir(Channel channel) => Path.Combine(_root, "ch" + channel.NumberKey);
 
     // Deletes bumpers, layers and fillers nobody has used for a while, and leftovers of interrupted renders. Runs
     // at most hourly, off the caller's thread.

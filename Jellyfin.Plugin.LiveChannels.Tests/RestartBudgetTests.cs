@@ -18,7 +18,7 @@ public class RestartBudgetTests
 
     // A session whose producer has already died; every replacement also "dies" immediately (a completed task).
     private static LiveChannelsTvService.LiveSession DeadSession()
-        => new("lc_test", new CancellationTokenSource(), Task.CompletedTask, "/tmp/lc_test", "Test", "chan", 1, T0, new SessionStats());
+        => new("lc_test", new CancellationTokenSource(), Task.CompletedTask, "/tmp/lc_test", "Test", "chan", "1", T0, new SessionStats());
 
     private static bool Restart(LiveChannelsTvService.LiveSession session, DateTime now)
         => session.TryRestart(Interval, 3, Healthy, _ => Task.CompletedTask, out _, now);

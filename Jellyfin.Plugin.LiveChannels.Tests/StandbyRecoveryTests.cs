@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -64,9 +65,9 @@ public class StandbyRecoveryTests : IClassFixture<MediaFixtures>
             var program = new ProgramEntry(Guid.NewGuid(), "Returns later", null, TimeSpan.FromSeconds(6).Ticks, mediaPath) { SourceHeight = perItem ? 2160 : 1080, SourceVideoCodec = "h264", SourceAudioCodec = "aac", SourceAudioChannels = 2 };
             var number = ChannelNumber + (perItem ? 1 : 0);
             var channel = new Channel { Id = Guid.NewGuid().ToString("N"), Name = "Standby test", Number = number };
-            var schedules = (ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
+            var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
                 .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-            schedules[number] = new[] { program };
+            schedules[number.ToString(CultureInfo.InvariantCulture)] = new[] { program };
             var contentMarker = perItem ? "Returns later\n$ ffmpeg" : "-f concat";
 
             var log = _media.Output("session.log");
@@ -114,7 +115,7 @@ public class StandbyRecoveryTests : IClassFixture<MediaFixtures>
             }
             finally
             {
-                schedules.TryRemove(number, out _);
+                schedules.TryRemove(number.ToString(CultureInfo.InvariantCulture), out _);
             }
         });
     }
@@ -136,9 +137,9 @@ public class StandbyRecoveryTests : IClassFixture<MediaFixtures>
             var program = new ProgramEntry(Guid.NewGuid(), "Garbage item", null, TimeSpan.FromSeconds(30).Ticks, mediaPath) { SourceHeight = 2160 };
             const int Number = ChannelNumber + 2;
             var channel = new Channel { Id = Guid.NewGuid().ToString("N"), Name = "Report test", Number = Number };
-            var schedules = (ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
+            var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
                 .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-            schedules[Number] = new[] { program };
+            schedules[Number.ToString(CultureInfo.InvariantCulture)] = new[] { program };
             var log = _media.Output("report-session.log");
             try
             {
@@ -152,7 +153,7 @@ public class StandbyRecoveryTests : IClassFixture<MediaFixtures>
             }
             finally
             {
-                schedules.TryRemove(Number, out _);
+                schedules.TryRemove(Number.ToString(CultureInfo.InvariantCulture), out _);
             }
 
             var report = Directory.GetFiles(_logs, "livechannels-failure-*Garbage_item.log").Single();
