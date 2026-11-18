@@ -125,9 +125,9 @@ public sealed class BumperStreamTests : IClassFixture<MediaFixtures>
     // a machine under load still has the stretch the test looks at.
     private async Task Stream(FfmpegHarness ff, Channel channel, ProgramLoop loop, string log, string output, string until, string after, double untilSeconds, StreamSessionService? service = null)
     {
-        var schedules = (ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
+        var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
             .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-        schedules[channel.Number] = loop;
+        schedules[channel.Number.ToString()] = loop;
         try
         {
             service ??= NewService(ff, out _);
@@ -149,7 +149,7 @@ public sealed class BumperStreamTests : IClassFixture<MediaFixtures>
         }
         finally
         {
-            schedules.TryRemove(channel.Number, out _);
+            schedules.TryRemove(channel.Number.ToString(), out _);
         }
     }
 

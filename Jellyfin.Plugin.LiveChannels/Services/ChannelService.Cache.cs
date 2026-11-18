@@ -339,7 +339,7 @@ public partial class ChannelService
     /// <returns>The superseded loop, or <c>null</c>.</returns>
     internal IReadOnlyList<ProgramEntry>? SupersededLoop(Channel channel)
     {
-        if (SupersededSchedules.TryGetValue(channel.Number, out var hot))
+        if (SupersededSchedules.TryGetValue(channel.Number.ToString(CultureInfo.InvariantCulture), out var hot))
         {
             return hot;
         }
@@ -351,7 +351,7 @@ public partial class ChannelService
     // Drops a channel's superseded schedule once its rebuild is written.
     private void ForgetSuperseded(Channel channel)
     {
-        SupersededSchedules.TryRemove(channel.Number, out _);
+        SupersededSchedules.TryRemove(channel.Number.ToString(CultureInfo.InvariantCulture), out _);
         try
         {
             File.Delete(SupersededFileFor(channel));

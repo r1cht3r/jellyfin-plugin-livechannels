@@ -1545,7 +1545,7 @@ public sealed class LiveChannelsTvService : ILiveTvService, ISupportsNewTimerIds
 
     // Releases a channel's in-memory schedule when it has no remaining live sessions, so an unwatched channel holds
     // nothing. Called after a session has already been forgotten.
-    private void ReleaseScheduleIfIdle(int channelNumber)
+    private void ReleaseScheduleIfIdle(double channelNumber)
     {
         if (!_byChannel.Values.Any(s => s.Number == channelNumber))
         {
@@ -2030,7 +2030,7 @@ public sealed class LiveChannelsTvService : ILiveTvService, ISupportsNewTimerIds
         private DateTime _lastRestartUtc = DateTime.MinValue;
         private DateTime? _workerEndedUtc;
 
-        public LiveSession(string id, CancellationTokenSource cts, Task worker, string path, string channelName, string channelId, int number, DateTime startedUtc, SessionStats stats)
+        public LiveSession(string id, CancellationTokenSource cts, Task worker, string path, string channelName, string channelId, double number, DateTime startedUtc, SessionStats stats)
         {
             Id = id;
             Cts = cts;
@@ -2063,7 +2063,7 @@ public sealed class LiveChannelsTvService : ILiveTvService, ISupportsNewTimerIds
 
         public string ChannelId { get; }
 
-        public int Number { get; }
+        public double Number { get; }
 
         public DateTime StartedUtc { get; }
 

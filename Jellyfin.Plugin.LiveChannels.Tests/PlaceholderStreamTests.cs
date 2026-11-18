@@ -126,9 +126,9 @@ public sealed class PlaceholderStreamTests : IClassFixture<MediaFixtures>
 
     private async Task Stream(FfmpegHarness ff, StreamSessionService service, Channel channel, ProgramLoop loop, string log, string output, string until, double untilSeconds)
     {
-        var schedules = (ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
+        var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
             .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-        schedules[channel.Number] = loop;
+        schedules[channel.Number.ToString()] = loop;
         try
         {
             using var cts = new CancellationTokenSource();
@@ -153,7 +153,7 @@ public sealed class PlaceholderStreamTests : IClassFixture<MediaFixtures>
         }
         finally
         {
-            schedules.TryRemove(channel.Number, out _);
+            schedules.TryRemove(channel.Number.ToString(), out _);
             if (Environment.GetEnvironmentVariable("LIVECHANNELS_PLACEHOLDER_PREVIEW") is { Length: > 0 } keep && File.Exists(log))
             {
                 Directory.CreateDirectory(keep);
