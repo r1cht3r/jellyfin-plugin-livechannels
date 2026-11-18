@@ -281,9 +281,9 @@ public class SessionRobustnessTests : IClassFixture<MediaFixtures>
                 .Select(i => new ProgramEntry(Guid.NewGuid(), "Item " + i, null, TimeSpan.FromSeconds(6).Ticks, mediaPath) { SourceHeight = 2160 })
                 .ToArray();
             var channel = new Channel { Id = Guid.NewGuid().ToString("N"), Name = "Closed output test", Number = ChannelNumber };
-            var schedules = (ConcurrentDictionary<int, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
+            var schedules = (ConcurrentDictionary<string, IReadOnlyList<ProgramEntry>>)typeof(ChannelService)
                 .GetField("MemorySchedules", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-            schedules[ChannelNumber] = programs;
+            schedules[channel.NumberKey] = programs;
             var logs = _media.Output("closed-output-logs-" + Guid.NewGuid().ToString("N"));
             try
             {
@@ -297,7 +297,7 @@ public class SessionRobustnessTests : IClassFixture<MediaFixtures>
             }
             finally
             {
-                schedules.TryRemove(ChannelNumber, out _);
+                schedules.TryRemove(channel.NumberKey, out _);
             }
         });
     }
